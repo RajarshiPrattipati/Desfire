@@ -1,0 +1,97 @@
+Desfire Card
+ 
+How DESFire keying works
+• Card level (PICC): there is a single card master key that controls global operations like creating or deleting applications but does not grant access to application files.
+• Application level: each application has its own key set, with key 0 as the application master key; DESFire EV1/EV2/EV3 allow up to 14 keys per application for roles like read/write/admin, and files can also reference different keys for their access rights.
+Minimum vs recommended counts for 4 apps
+• Minimum secure setup: 1 PICC master key + 4 application master keys (one per app) = 5 unique keys total. This allows app creation/selection and a single key to manage each app’s files if configured that way.
+• Practical setup with separated roles: allocate additional perapp keys for read, write, and admin functions; for example, 1 master + 3 role keys per app → up to 13 keys total for 4 apps plus the PICC key = 17 keys, depending on security policy.
+Capacity and limits
+• Per app: up to 14 keys available to assign granular permissions and to support key rolling/key sets.
+• Per card: DESFire supports up to 28 applications (model dependent) and 32 files per application; key capacity scales per application, not globally.
+Notes
+• File access rights can reference any of the application’s keys, enabling finegrained control; choose AES for new designs on EV2/EV3.
+• The card master key is independent from application keys; knowing the card key alone does not grant file access in applications without the app keys.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Suggested layout for 4 applications on DESFire EV2/EV3.
+Hierarchy overview
+• Level 0: PICC (card) master key — controls Create/Delete Application and PICC settings; does not grant file access inside apps.
+• Level 1: Applications A1–A4 — each has its own keyset(s), up to 14 keys per keyset, and optionally multiple keysets for rotation; key 0 is the Application Master Key.
+• Level 2: Files within each app — each file’s Read, Write, Read&Write, and ChangeConfiguration permissions reference specific application key numbers.
+Suggested key roles per app
+• K0: Application Master Key (admin) — for app configuration, key changes, and privileged maintenance.
+• K1: Read key — required for authenticated reads on protected files.
+• K2: Write key — required for writes/appends on protected files.
+• K3: ChangeConfig key — required to modify file access rights/attributes.
+• K4–K5: Optional ops keys — e.g., audit/export or limitedscope service roles; reserve additional slots for future use and staged rotations.
+Diagram (textual)
+• PICC
+o PICC Master Key (AES128)
+o Applications
+▪ App A1
+▪ Keyset Active: KS1 (KS2..KS16 reserved)
+▪ K0: AMK (Admin)
+▪ K1: Read
+▪ K2: Write
+▪ K3: ChangeConfig
+▪ K4..: Reserved/Ops
+▪ Files
+▪ F1: StdData (R=K1, W=K2, RW=K2, CHG=K3)
+▪ F2: BackupData (R=K1, W=K2, RW=K2, CHG=K3)
+▪ F3: Value/Record as needed (map keys accordingly)
+▪ App A2 — same key role pattern (different key material)
+▪ App A3 — same pattern
+▪ App A4 — same pattern
+Key rotation plan
+• Enable multiple keysets per application during creation; keep KS1 active, prestage KS2 with new keys, then RollKeySet to rotate without downtime.
+• Maintain unique, independent key material per app to contain blast radius; never reuse the PICC master inside apps.
+Access rights mapping tips
+• Assign file access rights by key numbers, using FREE (0xE) for public reads where appropriate and NEVER (0xF) to disable an operation.
+• For EV3 SDM files, additionally set SDM Meta Read, SDM File Read, and SDM Counter Retrieval to specific keys as needed.
+Security recommendations
+• Prefer AES keys and EV2/EV3 secure messaging; change default keys immediately on personalization.
+• Separate duties: do not let AMK double as read/write in production; reserve K3 for config changes.
+• Document and escrow the PICC master separately from app keys; restrict its use to lifecycle operations.
+This structure yields 1 PICC key plus roughly 4–6 keys per application, totalling about 17–25 keys across 4 apps, with room for role separation and future rotations via additional keysets.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Key rotation without downtime on DESFire EV2/EV3 is done by pre-provisioning multiple keysets in each application, switching the active keyset atomically with RollKeySet, and gradually migrating readers to use the new keys; this avoids interrupting live transactions and lets legacy readers continue to work during a transition window. The core steps are: initialize extra keysets, personalize them with the new keys, activate the new keyset with RollKeySet, then decommission the old keyset once all readers are updated.
+Prerequisites
+• Applications must be created with “multiple keysets” enabled (KeySett3 bit for application keysets) so the app can hold up to 16 keysets of up to 14 keys each.
+• Readers/controllers need a distribution mechanism (e.g., SAM AV3, HSM, or secure update channel) to receive the new key material ahead of activation.
+Step-by-step procedure
+• Plan keysets: decide current active keyset ID (e.g., KS1) and the target (e.g., KS2), mapping each file’s access rights by key number within a keyset; the file permissions remain the same when switching keysets.
+• Initialize target keyset: authenticate to the application, run InitializeKeySet for KS2 if not already present, and set per-key versions.
+• Load new keys into KS2: use ChangeKeyEV2 (or equivalent) to write each application key (K0..Kn) into KS2; use AES keys and set key versions to match the reader’s expectations.
+• Distribute keys to readers: preload KS2 keys into SAM AV3 or reader secure storage; do not switch active keyset yet.
+• Atomic switch: execute RollKeySet to make KS2 the active keyset; from the card’s perspective, access rights still reference the same key numbers, now resolved in KS2. Live sessions authenticated under the old keyset expire naturally; new sessions use KS2 immediately.
+• Validation: test AuthenticateEV2First/AuthenticateAES with KS2 keys; verify read/write/ChangeFileSettings on representative files.
+• Decommission old keys: after all readers confirm operation on KS2, optionally wipe KS1 or roll forward again to KS3 for staged rotations; keep at least two keysets defined to simplify future rotations.
+Notes and tips
+• No file reconfiguration needed: access rights point to key numbers (e.g., Read=K1, Write=K2); rolling the keyset swaps the underlying material without touching file metadata.
+• SAM-assisted rotation: SAM AV3 can authenticate and issue ChangeKey/ChangeKeyEV2 securely; use it to avoid exposing keys to application code and to handle diversification if used.
+• Backward compatibility window: if some readers still hold KS1 keys, delay RollKeySet until they are updated, or plan a short maintenance window; once rolled, KS1-only readers will fail authentication.
+• EV1 cards: do not support multiple keysets; use ChangeKey with a dual-auth “change key” procedure and staggered reader rollout, which typically requires a brief coordinated window.
+Relevant commands (EV2/EV3)
+• InitializeKeySet, FinalizeKeySet, ChangeKeyEV2, RollKeySet; AuthenticateEV2First/AuthenticateAES to verify post-rotation access.nxp
+• For SAM workflows: SAM AV3 operations to change card keys and manage diversified keys
+ 
