@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DESFire Control Panel</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>DESFire Control Panel</h1>
+      <div class="grid">
+        <section>
+          <h2>Status</h2>
+          <div id="status"></div>
+          <div class="actions">
+            <button id="refresh">Refresh</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>Operations</h2>
+          <div class="op-row">
+            <label>Key Type
+              <select id="keyType">
+                <option value="DES">DES/3DES (16B)</option>
+                <option value="3DES">3DES (24B)</option>
+                <option value="AES">AES (16B)</option>
+                <option value="AES_EV2">AES EV2 First (16B)</option>
+              </select>
+            </label>
+            <label>Key (hex)
+              <input id="keyHex" placeholder="000000..." />
+            </label>
+            <label>Key No
+              <input id="keyNo" type="number" min="0" max="13" value="0" />
+            </label>
+          </div>
+          <div class="actions">
+            <button id="authPicc">Authenticate PICC</button>
+            <button id="erase" class="danger">Erase Card (Format PICC)</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>NPM Scripts</h2>
+          <div id="scripts"></div>
+        </section>
+      </div>
+
+      <section class="collapsible" id="kmSection">
+        <h2 class="collapsible-header">Key Management <span class="caret">▸</span></h2>
+        <div class="collapsible-body">
+        <div class="op-row">
+          <label>App ID (hex)
+            <input id="kmAppId" placeholder="000001" />
+          </label>
+          <label>Num Keys
+            <input id="kmNumKeys" type="number" min="1" max="14" value="5" />
+          </label>
+          <label>Key Type
+            <select id="kmKeyType">
+              <option value="AES">AES (16B)</option>
+              <option value="DES">DES/3DES (16B)</option>
+              <option value="3DES">3DES (24B)</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="kmGenerate">Generate</button>
+          <button id="kmSave">Save</button>
+          <button id="kmLoad">Load</button>
+          <button id="kmList">List</button>
+          <button id="kmShow">Show (masked)</button>
+          <button id="kmReveal">Reveal</button>
+        </div>
+        <pre id="kmOut"></pre>
+        </div>
+      </section>
+
+      <section class="collapsible" id="paySection">
+        <h2 class="collapsible-header">Payment <span class="caret">▸</span></h2>
+        <div class="collapsible-body">
+        <div class="op-row">
+          <label>Amount
+            <input id="payAmount" type="number" min="1" value="100" />
+          </label>
+          <label>Auth Source
+            <select id="paySource">
+              <option value="env">Env</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+          <label>Key No
+            <input id="payKeyNo" type="number" min="0" max="13" value="0" />
+          </label>
+          <label>Key Type
+            <select id="payKeyType">
+              <option value="DES">DES</option>
+              <option value="3DES">3DES</option>
+              <option value="AES">AES</option>
+              <option value="AES_EV2">AES_EV2</option>
+            </select>
+          </label>
+          <label>Key (hex)
+            <input id="payKeyHex" />
+          </label>
+        </div>
+        <div class="actions">
+          <button id="payStatus">Payment Status</button>
+          <button id="payCredit">Credit</button>
+          <button id="payDebit">Debit</button>
+        </div>
+        <pre id="payOut"></pre>
+        </div>
+      </section>
+
+      <section class="collapsible" id="appAuthSection">
+        <h2 class="collapsible-header">App Authentication <span class="caret">▸</span></h2>
+        <div class="collapsible-body">
+        <div class="op-row">
+          <label>AID (hex)
+            <input id="appAid" placeholder="000001" />
+          </label>
+          <label>Key No
+            <input id="appKeyNo" type="number" min="0" max="13" value="0" />
+          </label>
+          <label>Source
+            <select id="appSource">
+              <option value="keystore">Keystore</option>
+              <option value="env">Env</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+          <label>Key Type
+            <select id="appKeyType">
+              <option value="AES">AES</option>
+              <option value="AES_EV2">AES_EV2</option>
+              <option value="DES">DES</option>
+              <option value="3DES">3DES</option>
+            </select>
+          </label>
+          <label>Key (hex)
+            <input id="appKeyHex" />
+          </label>
+        </div>
+        <div class="actions">
+          <button id="appAuth">Authenticate App</button>
+        </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Logs</h2>
+        <div class="actions">
+          <button id="clear-log">Clear</button>
+        </div>
+        <pre id="log"></pre>
+      </section>
+    </div>
+
+    <script src="/client.js"></script>
+  </body>
+  </html>

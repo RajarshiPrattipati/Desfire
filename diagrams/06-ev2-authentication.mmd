@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant Reader
+    participant Card
+
+    Reader->>Card: AuthEV2First(KeyNo, PCDcap2)
+    Note over Card: Generate RndB (16 bytes)<br/>E_K(RndB)
+    Card-->>Reader: E_K(RndB)
+
+    Note over Reader: Decrypt RndB<br/>Generate RndA (16 bytes)<br/>RndB' = RotateLeft(RndB, 1)<br/>E_K(RndA || RndB')
+    Reader->>Card: E_K(RndA || RndB')
+
+    Note over Card: Decrypt, verify RndB'<br/>Generate TI (4 bytes)<br/>RndA' = RotateLeft(RndA, 1)<br/>E_K(TI || RndA' || PDcap2)
+    Card-->>Reader: TI || E_K(RndA') || PDcap2
+
+    Note over Reader: Decrypt and verify RndA'<br/>Store Transaction ID (TI)<br/>Derive EV2 session keys:<br/>KSesAuthENC = CMAC(K, SV1)<br/>KSesAuthMAC = CMAC(K, SV2)
+    Note over Reader,Card: ✓ Authenticated + TI + EV2 Keys

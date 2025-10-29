@@ -1,0 +1,8 @@
+flowchart TD
+    A[Power On RF Field] --> B[Detect Card<br/>REQA → ATQA]
+    B --> C[Anti-collision<br/>SELECT → SAK]
+    C --> D[Activate ISO 14443-4<br/>RATS → ATS]
+    D --> E[Get Version<br/>0x60 command]
+    E --> F[Ready for<br/>APDU Commands]
+
+    style F fill:#90EE90

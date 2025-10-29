@@ -1,0 +1,38 @@
+sequenceDiagram
+    participant Reader
+    participant Card
+
+    Reader->>Card: SelectApp(PAYMENT_AID)
+    Card-->>Reader: Success
+
+    Reader->>Card: AuthenticateEV2First(1, key)
+    Note right of Card: Authenticate with<br/>read/write key
+    Card-->>Reader: Enc(RndB)
+    Reader->>Card: Enc(RndA || RndB')
+    Card-->>Reader: TI || Enc(RndA')
+    Note over Reader,Card: ✓ Authenticated (EV2 session)
+
+    Reader->>Card: GetValue(FILE_BALANCE)
+    Note right of Card: Check current balance
+    Card-->>Reader: [current_value]
+
+    Note over Reader: Verify sufficient funds
+
+    alt Sufficient Balance
+        Reader->>Card: Debit(FILE_BALANCE, amount)
+        Note right of Card: Deduct payment amount
+        Card-->>Reader: Success
+
+        Reader->>Card: WriteRecord(FILE_HISTORY, ...)
+        Note right of Card: Log transaction
+        Card-->>Reader: Success
+
+        Reader->>Card: CommitTransaction()
+        Note right of Card: Make changes permanent
+        Card-->>Reader: Success
+        Note over Reader,Card: ✓ Payment Complete
+    else Insufficient Balance
+        Note over Reader: Transaction Failed
+        Reader->>Card: AbortTransaction()
+        Card-->>Reader: Success
+    end

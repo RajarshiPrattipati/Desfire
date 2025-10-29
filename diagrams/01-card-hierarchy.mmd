@@ -1,0 +1,23 @@
+graph TD
+    PICC[PICC - Proximity Integrated Circuit Card]
+    PICC --> PMK[PICC Master Key]
+    PICC --> APP1[Application 1<br/>AID: 0x000001]
+    PICC --> APP2[Application 2<br/>AID: 0x000002]
+    PICC --> APPN[Application N<br/>up to 28 apps]
+
+    APP1 --> K0_1[K0: Application Master Key]
+    APP1 --> K1_1[K1-K13: Application Keys]
+    APP1 --> F0_1[File 0: Standard Data]
+    APP1 --> F1_1[File 1: Value File]
+    APP1 --> F2_1[File 2: Record File]
+    APP1 --> FN_1[... up to 32 files]
+
+    APP2 --> K0_2[K0: Application Master Key]
+    APP2 --> K1_2[K1-K13: Application Keys]
+    APP2 --> FILES2[Files 0-31]
+
+    style PICC fill:#4A90E2
+    style APP1 fill:#7ED321
+    style APP2 fill:#7ED321
+    style APPN fill:#7ED321
+    style PMK fill:#F5A623

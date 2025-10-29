@@ -1,0 +1,18 @@
+flowchart TD
+    A[Step 1: Initialize New Keyset] --> B[InitializeKeySet keySetNo=1]
+    B --> C[Step 2: Change All Keys]
+    C --> D[ChangeKeyEV2 0, newKey0, keySetNo=1]
+    D --> E[ChangeKeyEV2 1, newKey1, keySetNo=1]
+    E --> F[... for all keys]
+    F --> G[Step 3: Roll to New Keyset]
+    G --> H[RollKeySet keySetNo=1]
+    H --> I{Both keysets<br/>active}
+    I --> J[Step 4: Update All Readers]
+    J --> K[Deploy new keys to all systems]
+    K --> L[Verify all readers updated]
+    L --> M[Step 5: Finalize]
+    M --> N[FinalizeKeySet]
+    N --> O[Old keys removed]
+
+    style I fill:#FFD700
+    style O fill:#90EE90

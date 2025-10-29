@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant Reader
+    participant Card
+
+    Reader->>Card: Command + First Data Chunk
+    Card-->>Reader: [Response] + SW=0x91AF
+    Note right of Card: More data follows
+
+    Reader->>Card: 0xAF (ADDITIONAL_FRAME)
+    Card-->>Reader: [More Data] + SW=0x91AF
+    Note right of Card: Still more data
+
+    Reader->>Card: 0xAF (ADDITIONAL_FRAME)
+    Card-->>Reader: [Final Data] + SW=0x9000
+    Note right of Card: Complete
+
+    Note over Reader,Card: All data received

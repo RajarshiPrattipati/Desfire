@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant Reader
+    participant Card
+
+    Reader->>Card: SelectApp(AID)
+    Card-->>Reader: Success
+
+    Reader->>Card: AuthenticateEV2First(0, old_key)
+    Note right of Card: Auth with current<br/>master key
+    Card-->>Reader: Enc(RndB)
+    Reader->>Card: Enc(RndA || RndB')
+    Card-->>Reader: TI || Enc(RndA')
+    Note over Reader,Card: ✓ Authenticated<br/>Session keys derived
+
+    Reader->>Card: ChangeKeyEV2(keyNo, new_key)
+    Note right of Reader: [keyNo]<br/>[E_KSesEnc(new_key || ver || CRC)]
+    Note right of Card: Decrypt and verify<br/>Update key
+    Card-->>Reader: Success
+
+    Note over Reader,Card: ✓ Key Changed

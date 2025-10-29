@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant Reader
+    participant Card
+
+    Reader->>Card: RF Field ON
+    Note over Card: Card powers up from RF field
+
+    Reader->>Card: REQA (Request)
+    Card-->>Reader: ATQA (Answer)
+
+    Reader->>Card: Anticollision
+    Card-->>Reader: UID
+
+    Reader->>Card: SELECT
+    Card-->>Reader: SAK
+
+    Reader->>Card: RATS (Request ATS)
+    Card-->>Reader: ATS
+
+    Note over Reader,Card: ISO 14443-4 established
+
+    loop APDU Communication
+        Reader->>Card: APDU Commands
+        Card-->>Reader: APDU Responses
+    end

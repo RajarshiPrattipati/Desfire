@@ -1,0 +1,212 @@
+# ============================================================================
+# DESFire Card Management System - .gitignore
+# ============================================================================
+
+# ============================================================================
+# CRITICAL SECURITY - NEVER COMMIT!
+# ============================================================================
+# Keys and secrets
+keys/
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+credentials.json
+secrets.json
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-store/
+bun.lockb
+
+# ============================================================================
+# Build Output
+# ============================================================================
+dist/
+build/
+out/
+*.js.map
+*.d.ts.map
+
+# TypeScript
+*.tsbuildinfo
+*.tsbuildinfo.*
+tsconfig.tsbuildinfo
+
+# ============================================================================
+# Testing & Coverage
+# ============================================================================
+coverage/
+.nyc_output/
+*.lcov
+.jest/
+__tests__/__snapshots__/
+
+# ============================================================================
+# Logs
+# ============================================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================================================
+# IDEs & Editors
+# ============================================================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ============================================================================
+# Operating System Files
+# ============================================================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+
+# ============================================================================
+# Mobile App (if in subdirectory)
+# ============================================================================
+mobile/
+
+# React Native / Expo (if not in separate directory)
+.expo/
+.expo-shared/
+*.mobileprovision
+*.orig.*
+web-build/
+
+# Android
+*.apk
+*.aab
+android/app/build/
+android/.gradle/
+android/local.properties
+android/.idea/
+android/captures/
+
+# iOS
+ios/Pods/
+ios/build/
+*.xcuserstate
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# ============================================================================
+# Temporary Files & Caches
+# ============================================================================
+tmp/
+temp/
+.cache/
+*.tmp
+*.temp
+.parcel-cache/
+
+# ============================================================================
+# Database Files
+# ============================================================================
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# ============================================================================
+# NFC/Card Testing (Optional)
+# ============================================================================
+# Uncomment if you want to ignore test card data
+# test-cards/
+# card-dumps/
+# *.dump
+
+# ============================================================================
+# Documentation Build
+# ============================================================================
+# Uncomment if using docs generators
+# docs/_build/
+# docs/.docusaurus/
+# site/
+
+# ============================================================================
+# Package Manager Lock Files (Optional)
+# ============================================================================
+# Choose one package manager and uncomment others if needed
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+# bun.lockb
+
+# ============================================================================
+# Miscellaneous
+# ============================================================================
+.eslintcache
+.stylelintcache
+*.seed
+*.pid
+*.pid.lock
+.history/

@@ -1,0 +1,41 @@
+{
+  "name": "desfire",
+  "version": "1.0.0",
+  "description": "Sabado DESFire Multi-Application Card Management System",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "provision": "ts-node src/provision.ts",
+    "auth-test": "ts-node src/auth-test.ts",
+    "test": "jest",
+    "web": "ts-node src/web/server.ts",
+    "web:dev": "READER_AUTOPROCESS=off ts-node src/web/server.ts",
+    "web:prod": "node dist/web/server.js"
+  },
+  "keywords": [
+    "desfire",
+    "nfc",
+    "mifare",
+    "card",
+    "payment"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/express": "^4.17.21",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.19.2",
+    "nfc-pcsc": "^0.8.1",
+    "winston": "^3.10.0"
+  },
+  "ts-node": {
+    "files": true
+  }
+}

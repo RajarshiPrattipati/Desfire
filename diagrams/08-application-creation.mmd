@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant Reader
+    participant Card
+
+    Reader->>Card: SelectApp(0x000000)
+    Note right of Card: Select PICC level
+    Card-->>Reader: Success
+
+    Reader->>Card: AuthenticateAES(0, PICC_key)
+    Note right of Card: Authenticate with<br/>PICC master key
+    Card-->>Reader: Enc(RndB)
+    Reader->>Card: Enc(RndA || RndB')
+    Card-->>Reader: Enc(RndA')
+    Note over Reader,Card: ✓ Authenticated
+
+    Reader->>Card: CreateApplication(AID, ...)
+    Note right of Card: Create new application
+    Card-->>Reader: Success
+
+    Reader->>Card: SelectApp(AID)
+    Note right of Card: Select new application
+    Card-->>Reader: Success
+
+    Reader->>Card: AuthenticateAES(0, default)
+    Note right of Card: Auth with factory<br/>default key
+    Card-->>Reader: Enc(RndB)
+    Reader->>Card: Enc(RndA || RndB')
+    Card-->>Reader: Enc(RndA')
+    Note over Reader,Card: ✓ Authenticated
+
+    Reader->>Card: ChangeKeyEV2(0, new_key)
+    Note right of Card: Change master key<br/>from default
+    Card-->>Reader: Success
+
+    Reader->>Card: CreateStdDataFile(...)
+    Note right of Card: Create files
+    Card-->>Reader: Success

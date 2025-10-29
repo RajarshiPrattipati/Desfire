@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant Reader
+    participant Card
+
+    Reader->>Card: AuthenticateAES(KeyNo)
+    Note over Card: Generate RndB (16 bytes)<br/>Encrypt: E_K(RndB)
+    Card-->>Reader: E_K(RndB)
+
+    Note over Reader: Decrypt: D_K(E_K(RndB)) = RndB<br/>Generate RndA (16 bytes)<br/>Rotate: RndB' = RotateLeft(RndB, 1)<br/>Encrypt: E_K(RndA || RndB')
+    Reader->>Card: E_K(RndA || RndB')
+
+    Note over Card: Decrypt: D_K(...)<br/>Verify RndB'<br/>Rotate: RndA' = RotateLeft(RndA, 1)<br/>Encrypt: E_K(RndA')
+    Card-->>Reader: E_K(RndA')
+
+    Note over Reader: Decrypt and verify RndA'<br/>Derive session keys:<br/>KSesAuthENC from RndA, RndB<br/>KSesAuthMAC from RndA, RndB
+    Note over Reader,Card: ✓ Authenticated + Session Keys

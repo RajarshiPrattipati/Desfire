@@ -1,0 +1,130 @@
+MIFARE DESFire cards using application-level isolation.
+High-level goals
+• Each card can hold multiple independent applications (logical separation already supported by DESFire).
+• No single global key that can access all apps.
+• Fine-grained file-level access control inside each app.
+• Strong server-side control and auditing with a secure vault for key material.
+• Fast offline operation for readers while minimizing attack surface.
+Core building blocks
+1. Card
+o Uses DESFire EV1/EV2/EV3 (use EV2/EV3 if available for stronger crypto and features).
+o Hosts multiple applications (AID) — one AID per tenant/app/service.
+o Each application has its own Key Table and Files.
+2. Card Management System (CMS)
+o Server that orchestrates provisioning, key rotation, and consent/authorization.
+o Integrates with DB Vault (HashiCorp Vault / cloud KMS / secure secret store).
+3. Vault
+o Stores encrypted per-card metadata and master wrapping keys (KEKs).
+o Delivers wrapped keys to CMS/Reader using short-lived sessions / access tokens.
+4. Readers / POS
+o Use secure OS keystore + TLS to contact CMS; may operate offline with cached wrapped keys and policies.
+Key architecture & hierarchy
+• Card Master Key (CMK) — per-card master used only for card-level sensitive ops. Stored wrapped in Vault.
+• Application Master Key (AMK) — per AID on the card. Used to manage app keys and admin ops for that app.
+• File Keys (FKs) — per-file or per-file-access-role (Read, Write, Execute) within an application.
+• Session Keys (SK) — ephemeral session keys derived from mutual authentication (card nonce + reader nonce + relevant key). Used for Secure Messaging.
+Principles:
+• Never reuse AMK across apps. Unique AMK per AID.
+• Use key diversification: KEK_app = HKDF(CMK, AID || CardUID) so that even identical AMK plaintext for different cards is different when wrapped.
+• DESFire supports AES-128 typically — use the strongest available on your card model (AES-128 AES-CL? follow card spec).
+Access control model
+• For each Application (AID):
+o KeyTable contains keys with roles: Admin, Read, Write, ChangeKey.
+o File Access Conditions map KeyIDs → allowed operations for each file.
+o Files can be:
+▪ Standard data files (read/write),
+▪ Value files (for counters/balance),
+▪ Linear/Record files,
+▪ AES/CMAC protected files if supported.
+• Enforce least privilege: give readers only the specific KeyIDs needed.
+Provisioning / Onboarding flow
+1. Card Issuance
+o CMS generates CMK and initial AMKs for each planned app (or generates AMK per app on first use).
+o CMS wraps keys with Vault KEK: wrapped_CMK, wrapped_AMK_AID1, ...
+o CMS writes wrapped_CMK to secure backend; only unwrapped inside Vault or HSM.
+o Card is personalized: CMK is injected into card using a secure personalization environment (reader physically connected to CMS). Prefer personalization at factory using a secure channel.
+2. App Creation on Card
+o CMS instructs a secure reader to create AID on the card.
+o Reader requests the appropriate AMK from Vault (wrapped) via CMS; CMS requests unwrap (or gives wrapped AMK and reader unwraps if allowed).
+o Reader authenticates to card with CMK (or personalization key), issues CreateApplication(AID), sets KeySettings, adds AMK into AID via ChangeKey (must authenticate as Master).
+o Card updates metadata (KeyVersion etc.). CMS stores mapping: CardUID ↔ AIDs ↔ KeyVersions (in Vault DB).
+Authentication & Runtime usage
+• Always do mutual authentication per DESFire command (EV1/EV2 secure messaging).
+• Typical flow:
+1. Reader initiates authentication with AMK (or file key depending on operation).
+2. Card sends Nc; Reader generates Ns.
+3. Derive SK from Nc, Ns, CardUID, KeyID (per card spec).
+4. Use SK for secure messaging (MAC/encrypt).
+5. Perform file operations under SK.
+• Readers: if online, fetch unwrapped key material from CMS/Vault at session start. If offline, use cached wrapped keys and local keystore to unwrap (short TTL + strict caching policy).
+Key rotation & versioning
+• Key Versioning: store a keyVersion in Vault and on-card metadata (DESFire KeyVersion).
+• Rotation process:
+1. CMS generates new AMKv2.
+2. CMS instructs readers (or personalization station) to Authenticate(AMKv1) → ChangeKey(AMKv2) in the app context.
+3. CMS updates Vault mapping and retains AMKv1 for grace period for rollback and compatibility.
+• Use envelope rewrap: wrap AMKv2 with KEK and store; do not re-encrypt all files unless required — DESFire ChangeKey updates key only.
+• For mass rotation: do in batches, verify success and rollback plan.
+Preventing cross-application access
+• No global keys: avoid any key that has access across multiple AIDs.
+• Key Diversification: ensures keys differ per app/card even if base secret repeated.
+• File ACLs: map KeyIDs to allowed file operations; ensure KeyTable entries don’t accidentally include admin-level keys for other apps.
+• Card configuration: set KeySettings to prevent arbitrary key changes (e.g., only admin key can change keys).
+Offline reader considerations
+• Short-lived cached credentials: store wrapped keys and unwrap locally with a local KEK stored in OS keystore; TTL e.g., 5–15 minutes or until power cycle.
+• Audit baton: readers maintain an operation log and sync to CMS periodically.
+• Revocation mechanism: CMS marks keys revoked in Vault; when readers reconnect, they must discard cached keys.
+Compromise handling / recovery
+• Compromise of reader:
+o Revoke reader certificate and block its token in CMS/Vault.
+o Rotate AMKs for apps that reader accessed.
+• Compromise of card (cloning):
+o Use nonce/session detection and transaction limits. For high security, rely on backend checks (transaction counters, online verification).
+o Consider combining offline card auth with online transaction verification for critical operations.
+• Compromise of CMS/Vault:
+o Vault should be hardened & have audit logs + multi-person approvals for critical ops. If Vault compromised, rotate KEKs, rewrap AMKs (or provision new ones).
+Auditing & Monitoring
+• Log every key unwrap, ChangeKey, Authenticate, and WriteFile with:
+o Timestamp, ReaderID, CardUID, AID, KeyID, operation result.
+• Alert on suspicious patterns: repeated failed auth, mass key unwraps, anomalous reader IPs.
+• Implement immutable append-only logs and retain for compliance.
+Performance & scale
+• Use Redis for ephemeral session state (active sessions, nonce tracking).
+• CMS should be horizontally scalable; Vault remains the single source for key material (use highly available configuration).
+• Batch provisioning & rotation tasks to off-peak windows; parallelize across personalization stations.
+Security controls (checklist)
+• Use DESFire EV2/EV3 when possible.
+• Unique AMK per AID; unique CMK per card.
+• Key diversification with CardUID + AID.
+• Secure Vault for KEKs; short-lived sessions for retrieval.
+• AEAD secure messaging (as provided by DESFire).
+• Per-file access mappings and least privilege KeyIDs.
+• Key versioning and rotation policy + grace period.
+• Reader attestation (certs) and secure boot where possible.
+• Audit logging and alerting.
+• Offline caching policy + TTL.
+• Rate limits and nonce replay protection.
+Example sequence diagram (create app + change key)
+sequenceDiagram
+   participant CMS as Card Management System
+   participant Vault as DB Vault
+   participant Reader as Secure Reader / POS
+   participant Card as DESFire Card
+ 
+   CMS->>Vault: Request unwrapped AMK for AID (auth+audit)
+   Vault-->>CMS: Deliver wrapped AMK (or unwrap inside Vault & send ephemeral key)
+   CMS->>Reader: Send wrapped AMK + operation token
+   Reader->>Card: Authenticate using CMK (personalization key)
+   Card-->>Reader: Nc
+   Reader->>Card: Auth response (mutual auth)
+   Reader->>Card: CreateApplication(AID)
+   Reader->>Card: ChangeKey(AID, AMKv1)  -- uses secure messaging
+   Reader->>CMS: Report success / send signed receipt
+   CMS->>Vault: Store mapping CardUID ↔ AID ↔ AMKv1 metadata
+Recommendations / final notes
+• DESFire provides robust primitives — your job is to use them correctly: per-AID keys, secure messaging, and strict KeySettings.
+• For maximum isolation, treat each AID as a separate tenant: separate keys, separate audit trails, and separate rotation lifecycles.
+• Where possible, combine with backend checks (online verification of transactions) for high-value operations — don’t rely purely on on-card auth.
+ 
+
+ 

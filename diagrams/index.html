@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DESFire Communication Protocol Diagrams</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .intro {
+            background: white;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .diagram-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .diagram-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .diagram-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .diagram-header {
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .diagram-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .diagram-title {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .diagram-type {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .diagram-section {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .diagram-description {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .diagram-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: white;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .diagram-image:hover {
+            opacity: 0.95;
+        }
+
+        .diagram-footer {
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .download-btn:hover {
+            background: #764ba2;
+        }
+
+        .download-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            text-align: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            cursor: zoom-out;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal img {
+            max-width: 90%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        @media (max-width: 768px) {
+            .diagram-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🔐 DESFire Communication Protocol</h1>
+            <p class="subtitle">Visual Documentation of MIFARE DESFire EV2/EV3 Card Communication</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="intro">
+            <h2>About These Diagrams</h2>
+            <p>
+                This collection contains 11 professional diagrams that illustrate the complete communication
+                protocol between NFC readers and MIFARE DESFire EV2/EV3 cards. Each diagram is available in
+                both PNG (high-resolution) and SVG (scalable vector) formats.
+            </p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">11</div>
+                <div class="stat-label">Total Diagrams</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Authentication Flows</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4</div>
+                <div class="stat-label">Transaction Flows</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">2</div>
+                <div class="stat-label">File Formats</div>
+            </div>
+        </div>
+
+        <div class="diagram-grid">
+            <!-- Diagram 1 -->
+            <div class="diagram-card">
+                <div class="diagram-header">
+                    <span class="diagram-number">01</span>
+                    <h3 class="diagram-title">Card Hierarchy</h3>
+                    <span class="diagram-type">Graph Diagram</span>
+                    <p class="diagram-section">Section 1.3</p>
+                    <p class="diagram-description">
+                        Visual representation of DESFire card structure with PICC, applications, keys, and files.
+                    </p>
+                </div>
+                <img src="01-card-hierarchy.png" alt="Card Hierarchy" class="diagram-image" onclick="openModal(this.src)">
+                <div class="diagram-footer">
+                    <a href="01-card-hierarchy.png" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PNG
+                    </a>
+                    <a href="01-card-hierarchy.svg" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                    </a>
+                </div>
+            </div>
+
+            <!-- Diagram 2 -->
+            <div class="diagram-card">
+                <div class="diagram-header">
+                    <span class="diagram-number">02</span>
+                    <h3 class="diagram-title">Communication Flow</h3>
+                    <span class="diagram-type">Sequence Diagram</span>
+                    <p class="diagram-section">Section 2.2</p>
+                    <p class="diagram-description">
+                        Complete initialization sequence from RF field to APDU communication readiness.
+                    </p>
+                </div>
+                <img src="02-communication-flow.png" alt="Communication Flow" class="diagram-image" onclick="openModal(this.src)">
+                <div class="diagram-footer">
+                    <a href="02-communication-flow.png" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PNG
+                    </a>
+                    <a href="02-communication-flow.svg" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                    </a>
+                </div>
+            </div>
+
+            <!-- Diagram 3 -->
+            <div class="diagram-card">
+                <div class="diagram-header">
+                    <span class="diagram-number">03</span>
+                    <h3 class="diagram-title">Additional Frame Mechanism</h3>
+                    <span class="diagram-type">Sequence Diagram</span>
+                    <p class="diagram-section">Section 5.3</p>
+                    <p class="diagram-description">
+                        Multi-frame protocol for large data transfers using 0xAF command.
+                    </p>
+                </div>
+                <img src="03-additional-frame.png" alt="Additional Frame" class="diagram-image" onclick="openModal(this.src)">
+                <div class="diagram-footer">
+                    <a href="03-additional-frame.png" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PNG
+                    </a>
+                    <a href="03-additional-frame.svg" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                    </a>
+                </div>
+            </div>
+
+            <!-- Diagram 4 -->
+            <div class="diagram-card">
+                <div class="diagram-header">
+                    <span class="diagram-number">04</span>
+                    <h3 class="diagram-title">DES/3DES Authentication</h3>
+                    <span class="diagram-type">Sequence Diagram</span>
+                    <p class="diagram-section">Section 6.3</p>
+                    <p class="diagram-description">
+                        Legacy challenge-response authentication (deprecated, for compatibility only).
+                    </p>
+                </div>
+                <img src="04-des-authentication.png" alt="DES Authentication" class="diagram-image" onclick="openModal(this.src)">
+                <div class="diagram-footer">
+                    <a href="04-des-authentication.png" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PNG
+                    </a>
+                    <a href="04-des-authentication.svg" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                    </a>
+                </div>
+            </div>
+
+            <!-- Diagram 5 -->
+            <div class="diagram-card">
+                <div class="diagram-header">
+                    <span class="diagram-number">05</span>
+                    <h3 class="diagram-title">AES Authentication</h3>
+                    <span class="diagram-type">Sequence Diagram</span>
+                    <p class="diagram-section">Section 6.4</p>
+                    <p class="diagram-description">
+                        AES-128 authentication with session key derivation for EV1/EV2/EV3 cards.
+                    </p>
+                </div>
+                <img src="05-aes-authentication.png" alt="AES Authentication" class="diagram-image" onclick="openModal(this.src)">
+                <div class="diagram-footer">
+                    <a href="05-aes-authentication.png" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PNG
+                    </a>
+                    <a href="05-aes-authentication.svg" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                    </a>
+                </div>
+            </div>
+
+            <!-- Diagram 6 -->
+            <div class="diagram-card">
+                <div class="diagram-header">
+                    <span class="diagram-number">06</span>
+                    <h3 class="diagram-title">EV2 First Authentication ⭐</h3>
+                    <span class="diagram-type">Sequence Diagram</span>
+                    <p class="diagram-section">Section 6.5</p>
+                    <p class="diagram-description">
+                        Recommended: Enhanced authentication with CMAC and transaction ID (EV2/EV3).
+                    </p>
+                </div>
+                <img src="06-ev2-authentication.png" alt="EV2 Authentication" class="diagram-image" onclick="openModal(this.src)">
+                <div class="diagram-footer">
+                    <a href="06-ev2-authentication.png" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PNG
+                    </a>
+                    <a href="06-ev2-authentication.svg" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                    </a>
+                </div>
+            </div>
+
+            <!-- Diagram 7 -->
+            <div class="diagram-card">
+                <div class="diagram-header">
+                    <span class="diagram-number">07</span>
+                    <h3 class="diagram-title">Card Initialization</h3>
+                    <span class="diagram-type">Flowchart</span>
+                    <p class="diagram-section">Section 10.1</p>
+                    <p class="diagram-description">
+                        Step-by-step initialization from RF field to APDU readiness.
+                    </p>
+                </div>
+                <img src="07-card-initialization.png" alt="Card Initialization" class="diagram-image" onclick="openModal(this.src)">
+                <div class="diagram-footer">
+                    <a href="07-card-initialization.png" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PNG
+                    </a>
+                    <a href="07-card-initialization.svg" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                    </a>
+                </div>
+            </div>
+
+            <!-- Diagram 8 -->
+            <div class="diagram-card">
+                <div class="diagram-header">
+                    <span class="diagram-number">08</span>
+                    <h3 class="diagram-title">Application Creation</h3>
+                    <span class="diagram-type">Sequence Diagram</span>
+                    <p class="diagram-section">Section 10.2</p>
+                    <p class="diagram-description">
+                        Complete workflow for creating and provisioning new applications.
+                    </p>
+                </div>
+                <img src="08-application-creation.png" alt="Application Creation" class="diagram-image" onclick="openModal(this.src)">
+                <div class="diagram-footer">
+                    <a href="08-application-creation.png" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PNG
+                    </a>
+                    <a href="08-application-creation.svg" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                    </a>
+                </div>
+            </div>
+
+            <!-- Diagram 9 -->
+            <div class="diagram-card">
+                <div class="diagram-header">
+                    <span class="diagram-number">09</span>
+                    <h3 class="diagram-title">Payment Transaction</h3>
+                    <span class="diagram-type">Sequence Diagram</span>
+                    <p class="diagram-section">Section 10.3</p>
+                    <p class="diagram-description">
+                        Complete payment flow with balance verification and error handling.
+                    </p>
+                </div>
+                <img src="09-payment-transaction.png" alt="Payment Transaction" class="diagram-image" onclick="openModal(this.src)">
+                <div class="diagram-footer">
+                    <a href="09-payment-transaction.png" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PNG
+                    </a>
+                    <a href="09-payment-transaction.svg" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                    </a>
+                </div>
+            </div>
+
+            <!-- Diagram 10 -->
+            <div class="diagram-card">
+                <div class="diagram-header">
+                    <span class="diagram-number">10</span>
+                    <h3 class="diagram-title">Key Change Flow</h3>
+                    <span class="diagram-type">Sequence Diagram</span>
+                    <p class="diagram-section">Section 10.4</p>
+                    <p class="diagram-description">
+                        Secure key change procedure using EV2 encryption method.
+                    </p>
+                </div>
+                <img src="10-key-change-flow.png" alt="Key Change Flow" class="diagram-image" onclick="openModal(this.src)">
+                <div class="diagram-footer">
+                    <a href="10-key-change-flow.png" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PNG
+                    </a>
+                    <a href="10-key-change-flow.svg" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                    </a>
+                </div>
+            </div>
+
+            <!-- Diagram 11 -->
+            <div class="diagram-card">
+                <div class="diagram-header">
+                    <span class="diagram-number">11</span>
+                    <h3 class="diagram-title">Key Rollover (Zero-Downtime)</h3>
+                    <span class="diagram-type">Flowchart</span>
+                    <p class="diagram-section">Section 10.5</p>
+                    <p class="diagram-description">
+                        Advanced key rotation for EV2/EV3 cards with zero downtime.
+                    </p>
+                </div>
+                <img src="11-key-rollover.png" alt="Key Rollover" class="diagram-image" onclick="openModal(this.src)">
+                <div class="diagram-footer">
+                    <a href="11-key-rollover.png" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PNG
+                    </a>
+                    <a href="11-key-rollover.svg" download class="download-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        SVG
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 DESFire Communication Protocol Documentation</p>
+            <p style="margin-top: 0.5rem; opacity: 0.8;">Generated with Mermaid CLI</p>
+        </div>
+    </footer>
+
+    <div id="modal" class="modal" onclick="closeModal()">
+        <img id="modal-image" src="" alt="Enlarged diagram">
+    </div>
+
+    <script>
+        function openModal(src) {
+            document.getElementById('modal-image').src = src;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

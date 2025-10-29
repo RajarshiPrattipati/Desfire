@@ -18,6 +18,70 @@ This repository contains comprehensive documentation and implementation plans fo
 
 ## 📂 Documentation Structure
 
+### Core Documentation
+
+#### **API_DOCUMENTATION.md** - Complete API Reference ⭐ NEW
+**Purpose**: Complete API documentation for all classes and methods
+
+**Contents**:
+- KeyManager API (key generation, storage, encryption)
+- DESFireCard API (authentication, key management, file operations)
+- Crypto utilities API (CMAC, CRC, encryption)
+- NFC Reader API (event handling, card detection)
+- APDU API (low-level communication)
+- Complete examples for all operations
+
+**Best For**: Developers implementing DESFire operations, API reference
+
+---
+
+#### **API_QUICK_REFERENCE.md** - Quick Lookup ⭐ NEW
+**Purpose**: Fast reference for common operations
+
+**Contents**:
+- Quick code snippets for common tasks
+- Authentication patterns
+- Transaction handling
+- Access rights configuration
+- Error handling examples
+- Complete workflow examples
+
+**Best For**: Quick lookups during development, code examples
+
+---
+
+#### **KEY_MANAGEMENT.md** - Security Guide ⭐ NEW
+**Purpose**: Complete key management and security guide
+
+**Contents**:
+- Key generation and storage
+- Authentication protocols explained
+- Key change procedures
+- Key rollover (advanced)
+- Security best practices
+- Troubleshooting guide
+- Complete working examples
+
+**Best For**: Understanding authentication, implementing key management
+
+---
+
+#### **GITIGNORE_GUIDE.md** - Version Control ⭐ NEW
+**Purpose**: Git configuration and security
+
+**Contents**:
+- Comprehensive .gitignore explanation
+- Security checklist
+- What to track vs ignore
+- Pre-commit hooks
+- Best practices
+
+**Best For**: Setting up version control, preventing security leaks
+
+---
+
+### Implementation Documentation
+
 ### 1. **PRD.md** - Product Requirements Document
 **Purpose**: Comprehensive product specification for the full DESFire system
 
@@ -132,15 +196,86 @@ This repository contains comprehensive documentation and implementation plans fo
 
 | Goal | Read This | Then This |
 |------|-----------|-----------|
+| **Look up API methods** ⭐ | API_DOCUMENTATION.md | API_QUICK_REFERENCE.md |
+| **Find code examples** ⭐ | API_QUICK_REFERENCE.md | src/auth-test.ts |
+
+## Environment Variables
+
+This project uses dotenv to load environment variables from a `.env` file in the repository root. These variables control debugging and provide default DESFire keys for PICC and applications.
+
+- DESFIRE_DEBUG
+  - Set to `1` to print raw APDUs and responses for troubleshooting.
+
+- PICC master key (used by web UI erase/auth if not explicitly provided):
+  - `DESFIRE_PICC_KEY_TYPE`: `DES`, `3DES`, `AES`, or `AES_EV2`
+  - `DESFIRE_PICC_KEY`: hex-encoded key value
+  - `DESFIRE_PICC_KEY_NO`: numeric key number (default `0`)
+
+- Application master keys (per AID). Use uppercase 6-hex AID, zero-padded. Example for AID `0x000001`:
+  - `DESFIRE_APP_000001_KEY_TYPE`: `DES`, `3DES`, `AES`, or `AES_EV2`
+  - `DESFIRE_APP_000001_KEY`: hex-encoded key value
+  - `DESFIRE_APP_000001_KEY_NO`: numeric key number (default `0`)
+
+Example `.env`:
+
+```
+DESFIRE_DEBUG=1
+
+DESFIRE_PICC_KEY_TYPE=3DES
+DESFIRE_PICC_KEY=00112233445566778899AABBCCDDEEFF
+DESFIRE_PICC_KEY_NO=0
+
+DESFIRE_APP_000001_KEY_TYPE=DES
+DESFIRE_APP_000001_KEY=00000000000000000000000000000000
+DESFIRE_APP_000001_KEY_NO=0
+
+# Encrypted keystore master (for saving/loading app keysets)
+KEYSTORE_MASTER_PASSWORD=change-me
+# or provide a 32-byte key in hex instead of password derivation
+# KEYSTORE_MASTER_KEY_HEX=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+```
+
+Notes:
+- DES/3DES key length must match card configuration (16B for 2-key 3DES, 24B for 3-key 3DES).
+- `AES_EV2` uses the EV2 First (0x71) authentication flow.
+| **Implement authentication** ⭐ | KEY_MANAGEMENT.md | API_DOCUMENTATION.md (Auth section) |
+| **Generate and store keys** ⭐ | KEY_MANAGEMENT.md (Quick Start) | src/auth-test.ts |
+| **Set up git correctly** ⭐ | GITIGNORE_GUIDE.md | — |
 | **Understand the business requirements** | PRD.md (Sections 1-2) | SABADO_IMPLEMENTATION.md (Sections 1-3) |
 | **Make architecture decisions** | SABADO_IMPLEMENTATION.md (Section 2) | Architecture.png |
-| **Start coding immediately** | QUICKSTART.md | Card.txt |
+| **Start coding immediately** | QUICKSTART.md + API_QUICK_REFERENCE.md | src/ directory |
 | **Plan the project timeline** | TASKS.md (Phases 1-5) | PRD.md (Section 7) |
-| **Understand security model** | SABADO_IMPLEMENTATION.md (Section 6) | PRD.md (Section 4) |
-| **Set up development environment** | QUICKSTART.md (Steps 1-3) | — |
+| **Understand security model** | KEY_MANAGEMENT.md + SABADO_IMPLEMENTATION.md (Section 6) | PRD.md (Section 4) |
+| **Set up development environment** | QUICKSTART.md (Steps 1-3) | README_APP.md |
 | **Provision your first card** | QUICKSTART.md (Steps 4-6) | SABADO_IMPLEMENTATION.md (Section 4) |
-| **Implement payments** | SABADO_IMPLEMENTATION.md (Section 5) | QUICKSTART.md |
+| **Implement payments** | SABADO_IMPLEMENTATION.md (Section 5) | API_QUICK_REFERENCE.md (Value Files) |
 | **Learn DESFire concepts** | Card.txt | PRD.md (Section 3) |
+
+---
+
+## 📋 Available Scripts
+
+The project now includes working scripts for testing and development:
+
+| Command | Description | Status |
+|---------|-------------|--------|
+| `npm run dev` | Read card information | ✅ Working |
+| `npm run provision` | Provision card with 2 applications | ✅ Working |
+| `npm run auth-test` | Test authentication and key management | ⭐ NEW |
+| `npm run build` | Compile TypeScript | ✅ Working |
+| `npm start` | Run compiled application | ✅ Working |
+
+### Quick Test
+```bash
+# Install dependencies
+npm install
+
+# Build the project
+npm run build
+
+# Test authentication (generates keys, authenticates with factory defaults)
+npm run auth-test
+```
 
 ---
 
@@ -324,11 +459,17 @@ Based on analysis in **SABADO_IMPLEMENTATION.md** Section 2:
 
 | Document | Version | Last Updated | Status |
 |----------|---------|--------------|--------|
+| API_DOCUMENTATION.md | 1.0 | 2025-10-18 | ⭐ NEW |
+| API_QUICK_REFERENCE.md | 1.0 | 2025-10-18 | ⭐ NEW |
+| KEY_MANAGEMENT.md | 1.0 | 2025-10-18 | ⭐ NEW |
+| GITIGNORE_GUIDE.md | 1.0 | 2025-10-18 | ⭐ NEW |
+| README_APP.md | 1.0 | 2025-10-18 | Updated |
+| SETUP_COMPLETE.md | 1.0 | 2025-10-18 | Updated |
 | PRD.md | 1.0 | 2025-10-14 | Final |
 | TASKS.md | 1.0 | 2025-10-14 | Final |
 | SABADO_IMPLEMENTATION.md | 1.0 | 2025-10-14 | Final |
 | QUICKSTART.md | 1.0 | 2025-10-14 | Final |
-| README.md | 1.0 | 2025-10-14 | Final |
+| README.md | 1.1 | 2025-10-18 | Updated |
 
 ---
 
